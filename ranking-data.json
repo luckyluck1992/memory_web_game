@@ -1,0 +1,238 @@
+{
+  "classic": [
+    {
+      "name": "Atheist",
+      "theme": "classic",
+      "themeLabel": "Classic",
+      "moves": 13,
+      "seconds": 25,
+      "createdAt": 1783884157551
+    },
+    {
+      "name": "Lucifer",
+      "theme": "classic",
+      "themeLabel": "Classic",
+      "moves": 13,
+      "seconds": 28,
+      "createdAt": 1783936314653
+    },
+    {
+      "name": "Gott",
+      "theme": "classic",
+      "themeLabel": "Classic",
+      "moves": 14,
+      "seconds": 22,
+      "createdAt": 1783872610992
+    },
+    {
+      "name": "Pimmelpammel",
+      "theme": "classic",
+      "themeLabel": "Classic",
+      "moves": 14,
+      "seconds": 29,
+      "createdAt": 1783871293726
+    },
+    {
+      "name": "Gott",
+      "theme": "classic",
+      "themeLabel": "Classic",
+      "moves": 15,
+      "seconds": 25,
+      "createdAt": 1783872227097
+    },
+    {
+      "name": "Hans Christian",
+      "theme": "classic",
+      "themeLabel": "Classic",
+      "moves": 15,
+      "seconds": 26,
+      "createdAt": 1783871294620
+    },
+    {
+      "name": "Lucifer",
+      "theme": "classic",
+      "themeLabel": "Classic",
+      "moves": 16,
+      "seconds": 33,
+      "createdAt": 1783936424979
+    },
+    {
+      "name": "Pimmelschimmel",
+      "theme": "classic",
+      "themeLabel": "Classic",
+      "moves": 21,
+      "seconds": 43,
+      "createdAt": 1783871464937
+    },
+    {
+      "name": "Lukas",
+      "theme": "classic",
+      "themeLabel": "Classic",
+      "moves": 25,
+      "seconds": 52,
+      "createdAt": 1783871448980
+    }
+  ],
+  "jesus": [
+    {
+      "name": "Hans Christian",
+      "theme": "jesus",
+      "themeLabel": "Jesus-Pack",
+      "moves": 41,
+      "seconds": 95,
+      "createdAt": 1783871862396
+    },
+    {
+      "name": "Atheist",
+      "theme": "jesus",
+      "themeLabel": "Jesus-Pack",
+      "moves": 51,
+      "seconds": 99,
+      "createdAt": 1783885099215
+    },
+    {
+      "name": "Gott",
+      "theme": "jesus",
+      "themeLabel": "Jesus-Pack",
+      "moves": 51,
+      "seconds": 101,
+      "createdAt": 1783873521320
+    },
+    {
+      "name": "Gott",
+      "theme": "jesus",
+      "themeLabel": "Jesus-Pack",
+      "moves": 55,
+      "seconds": 119,
+      "createdAt": 1783872551701
+    },
+    {
+      "name": "Atheist",
+      "theme": "jesus",
+      "themeLabel": "Jesus-Pack",
+      "moves": 61,
+      "seconds": 135,
+      "createdAt": 1783884337977
+    },
+    {
+      "name": "Atheist",
+      "theme": "jesus",
+      "themeLabel": "Jesus-Pack",
+      "moves": 70,
+      "seconds": 151,
+      "createdAt": 1783884502330
+    }
+  ],
+  "pokemon": [
+    {
+      "name": "Atheist",
+      "theme": "pokemon",
+      "themeLabel": "Pokemon-Pack",
+      "moves": 35,
+      "seconds": 75,
+      "createdAt": 1783884596742
+    },
+    {
+      "name": "Hans Christian",
+      "theme": "pokemon",
+      "themeLabel": "Pokemon-Pack",
+      "moves": 35,
+      "seconds": 112,
+      "createdAt": 1784041430145
+    },
+    {
+      "name": "Gott",
+      "theme": "pokemon",
+      "themeLabel": "Pokemon-Pack",
+      "moves": 45,
+      "seconds": 94,
+      "createdAt": 1783872338711
+    }
+  ],
+  "band": [
+    {
+      "name": "Atheist",
+      "theme": "band",
+      "themeLabel": "Band-Pack",
+      "moves": 34,
+      "seconds": 63,
+      "createdAt": 1783884988726
+    },
+    {
+      "name": "August",
+      "theme": "band",
+      "themeLabel": "Band-Pack",
+      "moves": 37,
+      "seconds": 107,
+      "createdAt": 1783939890715
+    },
+    {
+      "name": "Lucifer",
+      "theme": "band",
+      "themeLabel": "Band-Pack",
+      "moves": 43,
+      "seconds": 102,
+      "createdAt": 1783936659473
+    },
+    {
+      "name": "Gott",
+      "theme": "band",
+      "themeLabel": "Band-Pack",
+      "moves": 48,
+      "seconds": 101,
+      "createdAt": 1783872886858
+    }
+  ],
+  "geschaeft": [
+    {
+      "name": "Hans Christian",
+      "theme": "geschaeft",
+      "themeLabel": "Geschäft-Pack",
+      "moves": 32,
+      "seconds": 116,
+      "createdAt": 1784041567966
+    },
+    {
+      "name": "Atheist",
+      "theme": "geschaeft",
+      "themeLabel": "Geschäft-Pack",
+      "moves": 38,
+      "seconds": 73,
+      "createdAt": 1783884915818
+    },
+    {
+      "name": "Gott",
+      "theme": "geschaeft",
+      "themeLabel": "Geschäft-Pack",
+      "moves": 51,
+      "seconds": 105,
+      "createdAt": 1783873018008
+    }
+  ],
+  "flo": [
+    {
+      "name": "Hans Christian",
+      "theme": "flo",
+      "themeLabel": "Flo-Pack",
+      "moves": 43,
+      "seconds": 97,
+      "createdAt": 1783898151423
+    },
+    {
+      "name": "Atheist",
+      "theme": "flo",
+      "themeLabel": "Flo-Pack",
+      "moves": 44,
+      "seconds": 91,
+      "createdAt": 1783884712044
+    },
+    {
+      "name": "Gott",
+      "theme": "flo",
+      "themeLabel": "Flo-Pack",
+      "moves": 57,
+      "seconds": 122,
+      "createdAt": 1783873195859
+    }
+  ]
+}
