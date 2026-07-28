@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory</title>
+  <link rel="stylesheet" href="style.css?v=20260712-ranking" />
+</head>
+<body>
+  <main class="app">
+    <h1>Memory</h1>
+    <p class="subtitle">Dynamisches Spielfeld – Webversion</p>
+
+    <div class="controls">
+      <label class="theme-picker" for="playerNameInput">
+        Dein Name
+        <input id="playerNameInput" type="text" maxlength="24" placeholder="Name eingeben" />
+      </label>
+      <label class="theme-picker" for="themeSelect">
+        Motivgruppe
+        <select id="themeSelect">
+          <option value="classic">Classic</option>
+          <option value="jesus">Jesus-Pack</option>
+          <option value="pokemon">Pokemon-Pack</option>
+          <option value="flo">Flo-Pack</option>
+          <option value="geschaeft">Geschäft-Pack</option>
+          <option value="band">Band-Pack</option>
+        </select>
+      </label>
+      <button id="startButton">Spiel starten</button>
+      <button id="restartButton" disabled>Neu mischen</button>
+    </div>
+
+    <p id="nameHint" class="name-hint">Bitte erst einen Namen eingeben.</p>
+
+    <section class="status-bar" aria-label="Spielstatus">
+      <div class="status-box">
+        <span class="status-label">Züge</span>
+        <strong id="moves">0</strong>
+      </div>
+      <div class="status-box">
+        <span class="status-label">Zeit</span>
+        <strong id="timer">00:00</strong>
+      </div>
+    </section>
+
+    <section id="board" class="board board--hidden" aria-label="Memory Spielfeld"></section>
+
+    <section class="ranking-panel" aria-label="Rangliste">
+      <div class="ranking-header">
+        <h2>Rangliste</h2>
+        <span class="ranking-subtitle">Sortiert nach Zügen, dann Zeit</span>
+      </div>
+      <div id="rankingEmpty" class="ranking-empty">Noch keine Einträge vorhanden.</div>
+      <ol id="rankingList" class="ranking-list"></ol>
+    </section>
+  </main>
+
+  <script src="script.js?v=20260712-ranking"></script>
+</body>
+</html>

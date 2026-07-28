@@ -1,0 +1,5 @@
+server.log
+server.pid
+ranking-data.json
+.DS_Store
+node_modules/

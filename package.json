@@ -1,0 +1,13 @@
+{
+  "name": "memory-game",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simple Memory web game with per-pack rankings",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
