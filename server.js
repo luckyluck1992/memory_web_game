@@ -1,10 +1,11 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { Pool } = require('pg');
 
 const root = __dirname;
 const PORT = process.env.PORT || 3200;
-const rankingFile = path.join(root, 'ranking-data.json');
+const DATABASE_URL = process.env.DATABASE_URL;
 const mime = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -18,19 +19,15 @@ const mime = {
   '.json': 'application/json; charset=utf-8',
 };
 
-function readRanking() {
-  try {
-    const raw = fs.readFileSync(rankingFile, 'utf8');
-    const data = JSON.parse(raw);
-    return data && typeof data === 'object' ? data : {};
-  } catch {
-    return {};
-  }
+if (!DATABASE_URL) {
+  console.error('DATABASE_URL fehlt. Bitte Neon-Connection-String als Environment Variable setzen.');
+  process.exit(1);
 }
 
-function writeRanking(data) {
-  fs.writeFileSync(rankingFile, JSON.stringify(data, null, 2), 'utf8');
-}
+const pool = new Pool({
+  connectionString: DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
 
 function sendJson(res, statusCode, payload) {
   res.writeHead(statusCode, {
@@ -39,37 +36,160 @@ function sendJson(res, statusCode, payload) {
   res.end(JSON.stringify(payload));
 }
 
-function sortEntries(entries) {
-  return [...entries].sort((a, b) => {
-    if (a.moves !== b.moves) return a.moves - b.moves;
-    if (a.seconds !== b.seconds) return a.seconds - b.seconds;
-    return (a.createdAt || 0) - (b.createdAt || 0);
-  });
+async function ensureSchema() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS rankings (
+      id BIGSERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      theme TEXT NOT NULL,
+      theme_label TEXT NOT NULL,
+      moves INTEGER NOT NULL CHECK (moves >= 0),
+      seconds INTEGER NOT NULL CHECK (seconds >= 0),
+      created_at BIGINT NOT NULL
+    );
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS rankings_theme_idx ON rankings(theme);
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS rankings_theme_name_idx ON rankings(theme, lower(name));
+  `);
 }
 
-function bestPerPlayer(entries) {
-  const bestByName = new Map();
+async function getRankingsByTheme() {
+  const { rows } = await pool.query(`
+    WITH ranked AS (
+      SELECT
+        id,
+        name,
+        theme,
+        theme_label,
+        moves,
+        seconds,
+        created_at,
+        ROW_NUMBER() OVER (
+          PARTITION BY theme, lower(name)
+          ORDER BY moves ASC, seconds ASC, created_at ASC
+        ) AS player_rank
+      FROM rankings
+    )
+    SELECT id, name, theme, theme_label, moves, seconds, created_at
+    FROM ranked
+    WHERE player_rank = 1
+    ORDER BY theme ASC, moves ASC, seconds ASC, created_at ASC
+  `);
 
-  for (const entry of sortEntries(entries)) {
-    const key = String(entry.name || '').trim().toLowerCase();
-    if (!key) continue;
-    if (!bestByName.has(key)) {
-      bestByName.set(key, entry);
-    }
+  const grouped = {};
+  for (const row of rows) {
+    if (!grouped[row.theme]) grouped[row.theme] = [];
+    grouped[row.theme].push({
+      name: row.name,
+      theme: row.theme,
+      themeLabel: row.theme_label,
+      moves: row.moves,
+      seconds: row.seconds,
+      createdAt: Number(row.created_at),
+    });
   }
 
-  return sortEntries([...bestByName.values()]);
+  Object.keys(grouped).forEach((theme) => {
+    grouped[theme] = grouped[theme].slice(0, 50);
+  });
+
+  return grouped;
+}
+
+async function upsertBestRanking({ name, theme, themeLabel, moves, seconds }) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const existing = await client.query(
+      `
+      SELECT id, moves, seconds, created_at
+      FROM rankings
+      WHERE theme = $1 AND lower(name) = lower($2)
+      ORDER BY moves ASC, seconds ASC, created_at ASC
+      LIMIT 1
+      `,
+      [theme, name],
+    );
+
+    const now = Date.now();
+    const normalized = {
+      name,
+      theme,
+      themeLabel,
+      moves: Math.max(0, Math.floor(moves)),
+      seconds: Math.max(0, Math.floor(seconds)),
+      createdAt: now,
+    };
+
+    if (existing.rows.length === 0) {
+      await client.query(
+        `
+        INSERT INTO rankings (name, theme, theme_label, moves, seconds, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        `,
+        [normalized.name, normalized.theme, normalized.themeLabel, normalized.moves, normalized.seconds, normalized.createdAt],
+      );
+    } else {
+      const best = existing.rows[0];
+      const isBetter = normalized.moves < best.moves
+        || (normalized.moves === best.moves && normalized.seconds < best.seconds)
+        || (normalized.moves === best.moves && normalized.seconds === best.seconds && normalized.createdAt < Number(best.created_at));
+
+      if (isBetter) {
+        await client.query(
+          `
+          UPDATE rankings
+          SET name = $1, theme_label = $2, moves = $3, seconds = $4, created_at = $5
+          WHERE id = $6
+          `,
+          [normalized.name, normalized.themeLabel, normalized.moves, normalized.seconds, normalized.createdAt, best.id],
+        );
+      }
+    }
+
+    await client.query(
+      `
+      DELETE FROM rankings
+      WHERE theme = $1
+        AND lower(name) = lower($2)
+        AND id NOT IN (
+          SELECT id FROM rankings
+          WHERE theme = $1 AND lower(name) = lower($2)
+          ORDER BY moves ASC, seconds ASC, created_at ASC
+          LIMIT 1
+        )
+      `,
+      [theme, name],
+    );
+
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+
+  return getRankingsByTheme();
 }
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
 
   if (req.method === 'GET' && url.pathname === '/api/rankings') {
-    const rankings = readRanking();
-    Object.keys(rankings).forEach((theme) => {
-      rankings[theme] = bestPerPlayer(Array.isArray(rankings[theme]) ? rankings[theme] : []).slice(0, 50);
-    });
-    return sendJson(res, 200, rankings);
+    getRankingsByTheme()
+      .then((rankings) => sendJson(res, 200, rankings))
+      .catch((error) => {
+        console.error('GET /api/rankings fehlgeschlagen:', error);
+        sendJson(res, 500, { error: 'Konnte Rankings nicht laden.' });
+      });
+    return;
   }
 
   if (req.method === 'POST' && url.pathname === '/api/rankings') {
@@ -78,7 +198,7 @@ const server = http.createServer((req, res) => {
       body += chunk;
       if (body.length > 1_000_000) req.socket.destroy();
     });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const payload = JSON.parse(body || '{}');
         const name = String(payload.name || '').trim().slice(0, 24);
@@ -91,22 +211,10 @@ const server = http.createServer((req, res) => {
           return sendJson(res, 400, { error: 'Ungültige Ranking-Daten.' });
         }
 
-        const rankings = readRanking();
-        if (!Array.isArray(rankings[theme])) rankings[theme] = [];
-
-        rankings[theme].push({
-          name,
-          theme,
-          themeLabel,
-          moves: Math.max(0, Math.floor(moves)),
-          seconds: Math.max(0, Math.floor(seconds)),
-          createdAt: Date.now(),
-        });
-
-        rankings[theme] = bestPerPlayer(rankings[theme]).slice(0, 50);
-        writeRanking(rankings);
+        const rankings = await upsertBestRanking({ name, theme, themeLabel, moves, seconds });
         return sendJson(res, 200, { ok: true, rankings });
-      } catch {
+      } catch (error) {
+        console.error('POST /api/rankings fehlgeschlagen:', error);
         return sendJson(res, 400, { error: 'Konnte Ranking nicht speichern.' });
       }
     });
@@ -136,6 +244,13 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Memory server läuft auf http://0.0.0.0:${PORT}`);
-});
+ensureSchema()
+  .then(() => {
+    server.listen(PORT, '0.0.0.0', () => {
+      console.log(`Memory server läuft auf http://0.0.0.0:${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Schema-Initialisierung fehlgeschlagen:', error);
+    process.exit(1);
+  });

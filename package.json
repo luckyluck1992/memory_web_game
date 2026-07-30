@@ -5,9 +5,13 @@
   "description": "Simple Memory web game with per-pack rankings",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "import:rankings": "node scripts/import-rankings.js"
   },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "pg": "^8.12.0"
   }
 }
